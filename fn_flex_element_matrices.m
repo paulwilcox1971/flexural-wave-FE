@@ -6,15 +6,18 @@ function [Ke, Se] = fn_flex_element_matrices(x, EI, k)
 %w = Se * u
 
 Te = zeros(4);
+x0 = mean(x); %centre of element
+% x = x - x0;
 for ii = 1:2
-    Te(2 * (ii - 1) + 1, :) =     fn_flex_shape_function(k, x(ii));
-    Te(2 * (ii - 1) + 2, :) = k * fn_flex_shape_function(k, x(ii)) .* [1i, -1i, 1, -1];
+    Te(2 * (ii - 1) + 1, :) =     fn_flex_shape_function(k, x(ii) - x0);
+    Te(2 * (ii - 1) + 2, :) = k * fn_flex_shape_function(k, x(ii) - x0) .* [1i, -1i, 1, -1];
 end
 Se = inv(Te);
 Te = zeros(4);
+s = [1, -1];
 for ii = 1:2
-    Te(2 * (ii - 1) + 1, :) = -EI * k ^ 3 * fn_flex_shape_function(k, x(ii)) .* [-1i, 1i, 1, -1];
-    Te(2 * (ii - 1) + 2, :) = -EI * k ^ 2 * fn_flex_shape_function(k, x(ii)) .* [ -1, -1, 1, 1];
+    Te(2 * (ii - 1) + 1, :) =  EI * k ^ 3 * fn_flex_shape_function(k, x(ii) - x0) .* [-1i, 1i, 1, -1] * s(ii);
+    Te(2 * (ii - 1) + 2, :) = -EI * k ^ 2 * fn_flex_shape_function(k, x(ii) - x0) .* [ -1, -1, 1,  1] * s(ii);
 end
 Ke = Te * Se;
 end

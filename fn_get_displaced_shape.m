@@ -1,10 +1,13 @@
-function [y, y_at_nodes] = fn_get_displaced_shape(x, nodes, elements, ABCD, k) 
-
-y = zeros(size(x));
-y_at_nodes = zeros(size(nodes));
+function uu = fn_get_displaced_shape(xx, x, u, S, elements, k) 
+%gets displaced shape at any point by back substitution into shape
+%functions
+const_per_el = 4;
+ABCD = S * u;
+uu = zeros(size(xx));
 for ei = 1:size(elements, 1)
-    ii = find(x >= nodes(elements(ei, 1)) & x <= nodes(elements(ei, 2)));
-    jj = fn_global_el_indices(ei);
-    y(ii) = fn_flex_shape_function(k(ei), x(ii)) * ABCD(jj);
-    y_at_nodes(elements(ei,:)) = fn_flex_shape_function(k(ei), nodes(elements(ei,:))) * ABCD(jj);
+    ii = find(xx >= x(elements(ei, 1)) & xx <= x(elements(ei, 2)));
+    jj = fn_el_to_global_index(ei, [1:const_per_el]);
+    x0 = mean(x(elements(ei,:)));
+    uu(ii) = fn_flex_shape_function(k(ei), xx(ii) - x0) * ABCD(jj);
+end
 end
