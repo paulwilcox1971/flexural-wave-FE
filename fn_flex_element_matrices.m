@@ -4,19 +4,17 @@ function [Ke, Se] = fn_flex_element_matrices(x, EI, k)
 %u = [y1 y2 theta1 theta2]^T, by f = Ke * u. 
 %Matrix Se calculates shape function vector, w = [A B C D]^T, from
 %w = Se * u
-x1 = x(1);
-x2 = x(2);
+
 Te = zeros(4);
 for ii = 1:2
-    Te(ii,:)   = [         exp(1i * k * x(ii)),           exp(-1i * k * x(ii)),     exp(k * x(ii)),      exp(-k * x(ii))];
-    Te(ii+2,:) = [1i * k * exp(1i * k * x(ii)), -1i * k * exp(-1i * k * x(ii)), k * exp(k * x(ii)), -k * exp(-k * x(ii))];
+    Te(2 * (ii - 1) + 1, :) =     fn_flex_shape_function(k, x(ii));
+    Te(2 * (ii - 1) + 2, :) = k * fn_flex_shape_function(k, x(ii)) .* [1i, -1i, 1, -1];
 end
 Se = inv(Te);
 Te = zeros(4);
 for ii = 1:2
-    Te(ii,:)   = [-1i * k * exp(1i * k * x(ii)), 1i * k * exp(-1i * k * x(ii)), k * exp(k * x(ii)), -k * exp(-k * x(ii))];
-    Te(ii+2,:) = [         -exp(1i * k * x(ii)),         -exp(-1i * k * x(ii)),     exp(k * x(ii)),      exp(-k * x(ii))];
+    Te(2 * (ii - 1) + 1, :) = -EI * k ^ 3 * fn_flex_shape_function(k, x(ii)) .* [-1i, 1i, 1, -1];
+    Te(2 * (ii - 1) + 2, :) = -EI * k ^ 2 * fn_flex_shape_function(k, x(ii)) .* [ -1, -1, 1, 1];
 end
-Te = -EI * k^2 * Te;
 Ke = Te * Se;
 end
