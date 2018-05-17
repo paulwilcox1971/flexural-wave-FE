@@ -1,0 +1,32 @@
+clear;
+close all;
+
+
+nodes = [0; 4; 20];
+elements = [1, 2; 2, 3];
+
+EI = ones(size(elements, 1), 1) * 432692;
+
+k = ones(size(elements, 1), 1) * 2 * pi /7;
+
+%---------------------------------------------------------------------------
+%useful numbers
+no_els = size(elements, 1);
+dof_per_nd = 2;
+nds_per_el = 2;
+dof_per_el = nds_per_el * dof_per_nd;
+no_nds = size(nodes, 1);
+
+%get element matrices
+Ke = zeros(dof_per_el, dof_per_el, no_els);
+Se = zeros(dof_per_el, dof_per_el, no_els);
+for ei = 1:no_els
+    [Ke(:, :, ei), Se(:, :, ei)] = fn_flex_element_matrices([nodes(elements(ei,:))], EI(ei), k(ei))
+end
+
+%build global matrices
+K = zeros(no_nds * dof_per_nd);
+for ei = 1:no_els
+    ii = 
+    K(ii, ii) = K(ii, ii) + Ke(:, :, ei); 
+end
