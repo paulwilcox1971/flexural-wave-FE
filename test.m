@@ -37,3 +37,29 @@ for ei = 1:no_els
     ii = fn_global_el_indices(ei, const_per_el);
     S(ii, jj) = Se(:, :, ei);
 end
+
+%solve
+u_applied = NaN(size(K,1), 1);
+u_applied(1) = 0; %pinned end
+u_applied(5) = 0; %pinned end
+f_applied = zeros(size(K,1), 1);
+f_applied(3) = 1; %forcing node
+
+ii = find(~isnan(u_applied));
+jj = find(isnan(u_applied));
+
+u = zeros(size(K,1), 1);
+f = zeros(size(K,1), 1);
+u(jj) = K(jj, jj) \ (f_applied(jj) - K(jj, ii) * u_applied(ii));
+f(ii) = K(ii, jj) * u(jj) + K(ii, ii) * u_applied(ii);
+u(ii) = u_applied(ii);
+
+ABCD = S * u;
+
+x = linspace(min(nodes), max(nodes), 500)';
+y = zeros(size(x));
+for ei = 1:no_els
+    ii = find(x>=nodes(elements(ei, 1)) & x<=nodes(elements(ei, 2)));
+    jj = fn_global_el_indices(ei, const_per_el);
+    y(ii) = [exp(1i*k(ei)*x(ii)), exp(-1i*k(ei)*x(ii)), exp(k(ei)*x(ii)), exp(-k(ei)*x(ii))] * ABCD(jj);
+end
