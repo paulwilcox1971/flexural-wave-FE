@@ -17,16 +17,28 @@ for ii = 1:length(BC)
             u_applied(fn_nd_to_global_index(BC(ii).node, 1)) = BC(ii).value;
         case 'rotaional displacement' %imposes rotation
             u_applied(fn_nd_to_global_index(BC(ii).node, 2)) = BC(ii).value;
+            case 'general displacement' %applies lateral displacement and rotation
+            for jj = 1:2
+                u_applied(fn_nd_to_global_index(BC(ii).node, jj)) = BC(ii).value(jj);
+            end
 
         case 'force' %applies lateral force
             f_applied(fn_nd_to_global_index(BC(ii).node, 1)) = BC(ii).value;
         case 'moment' %applies moment
             f_applied(fn_nd_to_global_index(BC(ii).node, 2)) = BC(ii).value;
+        case 'general forcing' %applies lateral force and moment
+            for jj = 1:2
+                f_applied(fn_nd_to_global_index(BC(ii).node, jj)) = BC(ii).value(jj);
+            end
         
         case 'lateral spring' %applies lateral spring
             k_applied(fn_nd_to_global_index(BC(ii).node, 1)) = BC(ii).value;
         case 'rotational spring' %applies rotational spring
             k_applied(fn_nd_to_global_index(BC(ii).node, 2)) = BC(ii).value;
+        case 'general spring' %applies lateral and rotational spring
+            for jj = 1:2
+                k_applied(fn_nd_to_global_index(BC(ii).node, jj)) = BC(ii).value(jj);
+            end
         
         case 'lateral damper' %applies lateral damping
             k_applied(fn_nd_to_global_index(BC(ii).node, 1)) = 1i * BC(ii).value;
