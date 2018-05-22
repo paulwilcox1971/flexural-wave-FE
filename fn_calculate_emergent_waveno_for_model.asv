@@ -1,7 +1,7 @@
-function [emergent_waveno, emergent_mode_shape, x, mode_shape] = fn_calculate_emergent_waveno_for_model(K, S, BC, nodes, elements, k)
+function [emergent_waveno, x, mode_shape] = fn_calculate_emergent_waveno_for_model(K, S, BC, nodes, elements, k)
 left_node = 1;
 right_node = length(nodes);
-d = abs(nodes(right_node) - nodes(left_node));
+d = abs(nodes(right_node) - nodes(left_nodes));
 
 %check no BCs applied at first or last node
 if any([BC(:).node] == 1) || any([BC(:).node] == length(nodes))
@@ -63,13 +63,12 @@ for n = 1:4
     [x, mode_shape(:,n)] = fn_get_displaced_shape(nodes, elements, u, S, k, pts_per_element);
     theta_true = unwrap(angle(mode_shape(:,n)));
     theta_true = theta_true(end) - theta_true(1);
-    emergent_waveno(n) = theta_true / d + 1i * log(abs(D(n))) / d;
+    emergent_waveno(n) = theta_true / (nodes(end) - nodes(1));
 end
 
 %take the one with the biggest positive real wavenumber
 [dummy, n] = max(real(emergent_waveno));
 emergent_waveno = emergent_waveno(n);
 mode_shape = mode_shape(:, n);
-emergent_mode_shape = V(:, n);
 
 end

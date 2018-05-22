@@ -16,11 +16,11 @@ m = 67.7;
 
 col = 'rkb';%colours to plot different loads (needs to be same length as T)
 
-%Sleeper details (is fastest and works fine with just one sleeper in model)
+%Sleeper details (it should work fine with just one in model)
 no_sleepers_in_model = 1;
 sleeper_spacing = 0.6;
 lateral_mass = 40;
-lateral_stiffness = 0;
+lateral_stiffness = 1000;
 lateral_damping = 0;
 rotational_mass = 0;
 rotational_stiffness = 0;
@@ -35,38 +35,21 @@ min_nodes_per_wavelength = 1; %NB you don't need to change this as it doesn't al
 max_node_spacing = min_free_rail_wavelength / min_nodes_per_wavelength;
 [nodes, elements, sleeper_nodes, forcing_node] = fn_create_rail_mesh(no_sleepers_in_model * sleeper_spacing, sleeper_spacing, [], max_node_spacing, 'ends at midspans');
 
-%Run the modal calculation for all frequencies and tensions of interest
-emergent_waveno = zeros(length(freq), length(T));
-free_rail_waveno = zeros(length(freq), length(T));
+figure;
 for ti = 1:length(T)
-    [~, free_rail_waveno(:, ti)] = fn_waveguide_in_tension_dispersion(freq, E * I, T(ti), m);
+    [vph, free_rail_waveno] = fn_waveguide_in_tension_dispersion(freq, E * I, T(ti), m);
+    emergent_waveno = zeros(length(freq));
     for fi = 1:length(freq)
-        clear('BC');
         for bi = 1:length(sleeper_nodes)
             BC(bi) = fn_BC_values_for_sleeper(lateral_mass, lateral_stiffness, lateral_damping, rotational_mass, rotational_stiffness, rotational_damping, freq(fi), sleeper_nodes(bi));
         end
-        [K, S] = fn_build_flex_global_matrices(nodes, elements, ones(size(elements,1)) * E * I, ones(size(elements, 1), 1) * free_rail_waveno(fi, ti));
-        emergent_waveno(fi, ti) = fn_calculate_emergent_waveno_for_model(K, S, BC, nodes, elements, ones(size(elements, 1), 1) * free_rail_waveno(fi, ti));
+        [K, S] = fn_build_flex_global_matrices(nodes, elements, ones(size(elements,1)) * E * I, ones(size(elements, 1), 1) * free_rail_waveno(fi));
+        emergent_waveno(fi) = fn_calculate_emergent_waveno_for_model(K, S, BC, nodes, elements, k);
     end
-end
-
-%--------------------------------------------------------------------------
-%Plot results
-figure;
-for ti = 1:length(T)
-    h(ti) = loglog(freq, 2 * pi * freq(:) ./ real(emergent_waveno(:, ti)), [col(ti), '-']);
+    h(ti) = loglog(freq, 2 * pi * freq ./ real(emergent_waveno), [col(ti), '-']);
     hold on;
-    loglog(freq, 2 * pi * freq(:) ./ real(free_rail_waveno(:, ti)), [col(ti), ':']);
+    loglog(freq, 2 * pi * freq ./ real(free_rail_waveno), [col(ti), ':']);
 end
 xlabel('Frequency (Hz)');
 ylabel('Phase velocity (m/s)');
-legend(h, num2str(T'))
-
-figure;
-for ti = 1:length(T)
-    h(ti) = semilogx(freq, abs(imag(emergent_waveno(:, ti))), [col(ti), '-']);
-    hold on;
-end
-xlabel('Frequency (Hz)');
-ylabel('Attenuation (Np/m)');
 legend(h, num2str(T'))
