@@ -12,7 +12,10 @@ freq = 41;
 
 %geometry
 length_of_rail = 20;
+<<<<<<< HEAD
 position_of_shaker = 7;
+=======
+>>>>>>> 32caa333e327bf2e36a5bf5da404c32137ea579e
 
 %reflection coefficient at ends (0 = infinite rail, 1 = pinned support)
 RC = 0;
@@ -30,13 +33,18 @@ n2 = max([2, ceil((length_of_rail - position_of_shaker) / wavelength * min_nodes
 nodes = linspace(0, position_of_shaker, n1);
 nodes = [nodes(1:end - 1), linspace(position_of_shaker, length_of_rail, n2)]'; 
 
+
 left_node = 1;
 forcing_node = n1;
 right_node = length(nodes);
+<<<<<<< HEAD
  
 elements = [1: length(nodes) - 1; 2: length(nodes)]';
 EI = ones(size(elements, 1), 1) * 1; %actual value of bending stiffness doesn't matter unless you want actual forces and moments
 k = ones(size(elements, 1), 1) * waveno;
+=======
+
+>>>>>>> 32caa333e327bf2e36a5bf5da404c32137ea579e
 
 %BCs and forcing
 BC(1).node = left_node;
