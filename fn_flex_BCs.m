@@ -12,7 +12,7 @@ for ii = 1:length(BC)
     switch BC(ii).type
         case 'lateral displacement' %imposes lateral displacement
             u_applied(fn_nd_to_global_index(BC(ii).node, 1)) = BC(ii).value;
-        case 'rotaional displacement' %imposes rotation
+        case 'rotational displacement' %imposes rotation
             u_applied(fn_nd_to_global_index(BC(ii).node, 2)) = BC(ii).value;
             case 'combined displacement' %applies lateral displacement and rotation
             for jj = 1:2
@@ -23,7 +23,7 @@ for ii = 1:length(BC)
             f_applied(fn_nd_to_global_index(BC(ii).node, 1)) = BC(ii).value;
         case 'rotational forcing' %applies moment
             f_applied(fn_nd_to_global_index(BC(ii).node, 2)) = BC(ii).value;
-        case 'general forcing' %applies lateral force and moment
+        case 'combined forcing' %applies lateral force and moment
             for jj = 1:2
                 f_applied(fn_nd_to_global_index(BC(ii).node, jj)) = BC(ii).value(jj);
             end

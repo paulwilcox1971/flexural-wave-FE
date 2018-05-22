@@ -21,32 +21,34 @@ T = [-1,0,1] * 30e3*10;
 col = 'rkb';%colours to plot
 
 %length to consider, sleepers etc
-nominal_length = 20;
+no_sleepers_in_model = 20;
 sleeper_spacing = 0.6;
-sleeper_mass = 10;
-sleeper_damping = 100;
+lateral_mass = 10;
+lateral_stiffness = 0;
+lateral_damping = 0.0001;
+rotational_mass = 0;
+rotational_stiffness = 0;
+rotational_damping = 0;
+
+
+max_node_spacing = 0.25;
 
 %--------------------------------------------------------------------------
 %make the track, one node per sleeper, with extra half sleeper pitch nodes
 %at either end
-no_sleepers = round(nominal_length / sleeper_spacing);
-nodes = [0.5, 1:no_sleepers, no_sleepers + 0.5]' * sleeper_spacing;
+[nodes, elements, sleeper_nodes, forcing_node] = fn_create_rail_mesh(no_sleepers_in_model * sleeper_spacing, sleeper_spacing, [], max_node_spacing, 'ends at midspans');
 
-elements = [1:length(nodes) - 1; 2:length(nodes)]';
 EI = ones(size(elements,1)) * E * I;
 
 figure;
 for ti = 1:length(T)
-    [vph, nominal_waveno] = fn_waveguide_in_tension_dispersion(freq, E*I, T(ti), m);
-    
-    
+    [vph, nominal_waveno] = fn_waveguide_in_tension_dispersion(freq, E * I, T(ti), m);
     emergent_waveno = zeros(size(nominal_waveno));
     for fi = 1:length(freq)
         k = ones(size(elements,1)) * nominal_waveno(fi);
-        for bi = 1:length(nodes)-2
-            BC(bi) = fn_BC_values_for_lateral_mass_loading(sleeper_mass, freq(fi), bi + 1);
-            tmp = fn_BC_values_for_lateral_damper(sleeper_damping, freq(fi), bi + 1);
-            BC(bi).value = BC(bi).value + tmp.value;
+        for bi = 1:length(sleeper_nodes)
+%             BC(bi) = fn_BC_values_for_lateral_mass_loading(lateral_mass, freq(fi), sleeper_nodes(bi));
+            BC(bi) = fn_BC_values_for_sleeper(lateral_mass, lateral_stiffness, lateral_damping, rotational_mass, rotational_stiffness, rotational_damping, freq(fi), sleeper_nodes(bi));
         end
         [K, S] = fn_build_flex_global_matrices(nodes, elements, EI, k);
         [emergent_waveno(fi), x, mode_shape] = fn_calculate_emergent_waveno_for_model(K, S, BC, nodes, elements, k);

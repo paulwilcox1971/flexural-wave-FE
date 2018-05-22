@@ -42,8 +42,7 @@ theta = angle(diag(D));
 
 %run actual model for each possible phase to figure out true wavenumber of
 %propagating wave in positive direction
-x = linspace(min(nodes), max(nodes), 500)';
-mode_shape = zeros(length(x), 4);
+pts_per_element = 4;
 i1 = length(BC) + 1;
 i2 = length(BC) + 2;
 BC(i1).node = left_node;
@@ -59,7 +58,7 @@ for n = 1:4
     [u, f] = fn_flex_solver(K, BC);
     
     %Calculate displaced shape and plot results
-    mode_shape(:,n) = fn_get_displaced_shape(x, nodes, u, S, elements, k);
+    [x, mode_shape(:,n)] = fn_get_displaced_shape(nodes, elements, u, S, k, pts_per_element);
     theta_true = unwrap(angle(mode_shape(:,n)));
     theta_true = theta_true(end) - theta_true(1);
     emergent_waveno(n) = theta_true / (nodes(end) - nodes(1));
