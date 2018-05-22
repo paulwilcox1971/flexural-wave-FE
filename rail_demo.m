@@ -13,9 +13,10 @@ freq = 21;
 %geometry
 length_of_rail = 20;
 position_of_shaker = 6;
+position_of_mass = 12;
 
 %reflection coefficient at ends (0 = infinite rail, 1 = pinned support)
-RC = 0.1;
+RC = 0;
 
 %---------------------------------------------------------------------------
 %convert above into description for FE analysis
@@ -30,26 +31,29 @@ n2 = max([2, ceil((length_of_rail - position_of_shaker) / wavelength * min_nodes
 nodes = linspace(0, position_of_shaker, n1);
 nodes = [nodes(1:end - 1), linspace(position_of_shaker, length_of_rail, n2)]'; 
 
-left_node = 1;
-forcing_node = n1;
-right_node = length(nodes);
-
 elements = [1: length(nodes) - 1; 2: length(nodes)]';
 EI = ones(size(elements, 1), 1) * 1; %actual value of bending stiffness doesn't matter unless you want actual forces and moments
 k = ones(size(elements, 1), 1) * waveno;
 
-%BCs and forcing
-BC(1).node = left_node;
-BC(1).type = 'general damper';
-BC(1).value = fn_damper_values_for_reflection_coefficient(RC, EI(1), k(1));
+left_node = 1;
+left_element = 1;
+forcing_node = n1;
+right_node = length(nodes);
+right_element = size(elements, 1);
 
-BC(2).node = right_node;
-BC(2).type = 'general damper';
-BC(2).value = fn_damper_values_for_reflection_coefficient(RC, EI(2), k(2));
+
+%BCs and forcing
+BC(1) = fn_BC_values_for_reflection_coefficient(RC, EI(left_element), k(left_element), left_node);
+
+BC(2) = fn_BC_values_for_reflection_coefficient(RC, EI(right_element), k(right_element), right_node);
 
 BC(3).node = forcing_node;
-BC(3).type = 'force';
+BC(3).type = 'lateral forcing';
 BC(3).value = 1;
+
+%wang a mass on somewhere to see what happens
+[~,ii] = min(abs(position_of_mass - nodes));
+BC(4) = fn_BC_values_for_mass_loading(0, freq, ii); 
 
 %---------------------------------------------------------------------------
 %Build global matrices
