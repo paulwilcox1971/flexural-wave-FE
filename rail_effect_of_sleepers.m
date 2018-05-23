@@ -6,22 +6,22 @@ close all;
 %different loads, compared to the free rail under load case 
 
 %Frequencies and tensions to model
-freq = logspace(-1,2,100);
+freq = logspace(-2,2,100);
 T = [-1,0,1] * 30e3*10;
 
 %Rail properties
 E = 210e9;
-I = 6e-6;
+I = 30e-6;
 m = 67.7;
 
 col = 'rkb';%colours to plot different loads (needs to be same length as T)
 
 %Sleeper details (is fastest and works fine with just one sleeper in model)
-no_sleepers_in_model = 1;
-sleeper_spacing = 0.6;
-lateral_mass = 40;
-lateral_stiffness = 0;
-lateral_damping = 0;
+no_sleepers_in_model = 10;
+sleeper_spacing = 0.65;
+lateral_mass = 120;
+lateral_stiffness = 50e6;
+lateral_damping = 1e6;
 rotational_mass = 0;
 rotational_stiffness = 0;
 rotational_damping = 0;
@@ -61,7 +61,7 @@ end
 xlabel('Frequency (Hz)');
 ylabel('Phase velocity (m/s)');
 legend(h, num2str(T'))
-
+return
 figure;
 for ti = 1:length(T)
     h(ti) = semilogx(freq, abs(imag(emergent_waveno(:, ti))), [col(ti), '-']);
